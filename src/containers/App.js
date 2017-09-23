@@ -1,41 +1,91 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import { connect } from "react-redux";
-import RaisedButton from 'material-ui/RaisedButton';
-import { Wrapper, Card, Headline } from "../components/StyledComponents";
+import { Wrapper } from "../components/StyledComponents";
 import WelcomeCard from "../components/WelcomeCard";
 import QuestionCard from "../components/QuestionCard";
 import FinishCard from "../components/FinishCard";
+import { answer as submitAnswer, resetAnswers } from "../ducks/questions";
+import { scrambleArray } from "../utils";
 
 class App extends Component {
   state = {
-    currentQuestion: 0
-  }
+    questionIndex: 0,
+    currentCard: "welcome"
+  };
 
-  incrementQuestion = () => {
+  nextQuestion = () => {
+    if (this.state.questionIndex === this.props.questions.length - 1) {
+      this.setState({ currentCard: "finish" });
+      return;
+    }
+
     this.setState(prevState => {
-      return { currentQuestion: ++prevState.currentQuestion }
-    })
-  }
+      return { questionIndex: ++prevState.questionIndex };
+    });
+  };
 
-  resetQuestion = () => {
-    this.setState({ currentQuestion: 0 })
-  }
+  resetHandler = () => {
+    this.props.dispatch(resetAnswers());
+    this.setState({
+      questionIndex: 0,
+      currentCard: "welcome"
+    });
+  };
+
+  handleStart = () => {
+    this.setState({ currentCard: "question" });
+  };
+
+  handleAnswer = answer => {
+    this.props.dispatch(submitAnswer(answer));
+    this.nextQuestion();
+  };
+
+  calculateScore = () => {
+    const { answers, userAnswers } = this.props;
+
+    let score = 0;
+
+    answers.forEach((answer, i) => {
+      if (answer.correct === userAnswers[i]) {
+        ++score;
+      }
+    });
+
+    return score;
+  };
 
   getCurrentCard = () => {
-    const { currentQuestion } = this.state;
+    const { questionIndex, currentCard } = this.state;
+    const { answers, questions } = this.props;
 
-    if (currentQuestion === 0) {
-      return <WelcomeCard onStart={this.incrementQuestion}/>
-    } else if (currentQuestion <= 8) {
-      return <QuestionCard 
-        onAnswer={this.incrementQuestion} 
-        answers={["one", "two", "tree", "four"]}
-        question={"What is the answer?"}
-      />
-    } else {
-      return <FinishCard correctAnswers={5} onRestart={this.resetQuestion} />
+    switch (currentCard) {
+      case "welcome":
+        return <WelcomeCard onStart={this.handleStart} />;
+      case "question":
+        return (
+          <QuestionCard
+            onAnswer={this.handleAnswer}
+            answers={scrambleArray([
+              ...answers[questionIndex].incorrect,
+              answers[questionIndex].correct
+            ])}
+            question={questions[questionIndex]}
+          />
+        );
+      case "finish":
+        return (
+          <FinishCard
+            correctAnswers={this.calculateScore()}
+            onRestart={this.resetHandler}
+          />
+        );
+      default:
+        throw new TypeError(
+          "The card has to be 'welcome', 'question', or 'finish'"
+        );
     }
-  }
+  };
 
   render() {
     return (
@@ -46,4 +96,4 @@ class App extends Component {
   }
 }
 
-export default connect()(App);
+export default connect(state => state)(App);

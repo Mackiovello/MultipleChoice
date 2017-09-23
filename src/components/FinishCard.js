@@ -6,8 +6,15 @@ import PropTypes from "prop-types";
 export default function FinishCard({ correctAnswers, onRestart }) {
   return (
     <Card>
-      <Headline>{correctAnswers} correct</Headline>
+      <Headline>
+        {correctAnswers} correct
+      </Headline>
       <RaisedButton onClick={onRestart} label="reset" />
     </Card>
-  )
+  );
 }
+
+FinishCard.propTypes = {
+  correctAnswers: PropTypes.number.isRequired,
+  onRestart: PropTypes.func.isRequired
+};

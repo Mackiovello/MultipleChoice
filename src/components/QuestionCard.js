@@ -1,19 +1,30 @@
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import { Card, Headline } from "./StyledComponents";
+import FlatButton from "material-ui/FlatButton";
+import { Card, Question } from "./StyledComponents";
 import PropTypes from "prop-types";
 
 export default function QuestionCard({ onAnswer, question, answers }) {
   return (
     <Card>
-      <Headline>{question}</Headline>
-      {answers.map(answer => 
-        <button 
-          key={answer} 
-          onClick={onAnswer}>
-          {answer}
-        </button>
-      )}
+      <Question>
+        {question}
+      </Question>
+      <div>
+        {answers.map(answer =>
+          <FlatButton
+            key={answer}
+            label={answer}
+            fullWidth={true}
+            onClick={() => onAnswer(answer)}
+          />
+        )}
+      </div>
     </Card>
-  )
+  );
 }
+
+QuestionCard.propTypes = {
+  onAnswer: PropTypes.func.isRequired,
+  question: PropTypes.string.isRequired,
+  answers: PropTypes.array.isRequired
+};
