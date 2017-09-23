@@ -5,7 +5,7 @@ import WelcomeCard from "../components/WelcomeCard";
 import QuestionCard from "../components/QuestionCard";
 import FinishCard from "../components/FinishCard";
 import { answer as submitAnswer, resetAnswers } from "../ducks/questions";
-import { scrambleArray } from "../utils";
+import { scrambleArray, calculateScore } from "../utils";
 
 class App extends Component {
   state = {
@@ -41,23 +41,9 @@ class App extends Component {
     this.nextQuestion();
   };
 
-  calculateScore = () => {
-    const { answers, userAnswers } = this.props;
-
-    let score = 0;
-
-    answers.forEach((answer, i) => {
-      if (answer.correct === userAnswers[i]) {
-        ++score;
-      }
-    });
-
-    return score;
-  };
-
   getCurrentCard = () => {
     const { questionIndex, currentCard } = this.state;
-    const { answers, questions } = this.props;
+    const { answers, questions, userAnswers } = this.props;
 
     switch (currentCard) {
       case "welcome":
@@ -76,7 +62,7 @@ class App extends Component {
       case "finish":
         return (
           <FinishCard
-            correctAnswers={this.calculateScore()}
+            correctAnswers={calculateScore(answers, userAnswers)}
             onRestart={this.resetHandler}
           />
         );
